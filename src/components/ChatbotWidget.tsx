@@ -11,7 +11,7 @@ const QUICK_ACTIONS = [
   { label: "🌐 Networking", icon: Wifi, query: "Tell me about Romeo's network engineering background and CCNA training" },
   { label: "🎓 Education", icon: GraduationCap, query: "What did Romeo study at CPUT?" },
   { label: "🏥 Groote Schuur", icon: Briefcase, query: "Tell me about Romeo's internship at Groote Schuur Hospital" },
-  { label: "💼 Salesforce", icon: Code2, query: "Tell me about Romeo's Salesforce developer experience at Micronetbd" },
+  { label: "💼 Salesforce", icon: Code2, query: "Tell me about Romeo's Salesforce Engineer role at Micronetbd" },
   { label: "🔬 Lab Work", icon: FlaskConical, query: "Tell me about Romeo's lab automation work at Umane Pathology" },
   { label: "🗂️ Projects", icon: FolderKanban, query: "What projects has Romeo built?" },
   { label: "⚡ Tech Stack", icon: Cpu, query: "What is Romeo's full technical stack?" },
@@ -33,7 +33,7 @@ const KB: Record<string, { keywords: string[]; reply: string }> = {
   },
   salesforce: {
     keywords: ["salesforce", "apex", "soql", "lwc", "lightning", "crm", "flow", "micronetbd", "force.com", "developer"],
-    reply: `Romeo worked as a **Junior Salesforce Developer at Micronetbd Inc** — a USA-based remote development firm.\n\n**What He Built:**\n• Custom CRM workflows using **Apex** triggers and classes\n• Responsive user interfaces using **Lightning Web Components (LWC)**\n• Automation pipelines with **Salesforce Flow** and Process Builder\n• REST API integrations connecting Salesforce to external systems\n• Custom **SOQL** queries for reporting and data management\n\n**Methodology:**\nWorked in **Agile sprints** with international team members, delivering iterative improvements to client CRM platforms.\n\nThis role sharpened Romeo's ability to build scalable business logic in a cloud-first enterprise environment.`,
+    reply: `Romeo worked as a **Salesforce Engineer at MicronetBD Inc** — a USA-based remote development firm.\n\n**What He Built:**\n• Custom CRM workflows using **Apex** triggers and classes\n• Responsive user interfaces using **Lightning Web Components (LWC)**\n• Automation pipelines with **Salesforce Flow** and Process Builder\n• REST API integrations connecting Salesforce to external systems\n• Custom **SOQL** queries for reporting and data management\n\n**Methodology:**\nWorked in **Agile sprints** with international team members, delivering iterative improvements to client CRM platforms.\n\nThis role sharpened Romeo's ability to build scalable business logic in a cloud-first enterprise environment.`,
   },
   lab: {
     keywords: ["umane", "pathology", "lab", "histology", "microtomy", "staining", "h&e", "ihc", "specimen", "biopsy", "automation", "embedding", "clinical"],

@@ -110,7 +110,7 @@ export const Resume: React.FC = () => {
             <div className="flex flex-col gap-1.5">
               <div className="flex justify-between items-baseline flex-wrap gap-1">
                 <span className="font-display font-bold text-sm sm:text-base text-on-surface">
-                  Junior Salesforce Developer
+                  Salesforce Engineer
                 </span>
                 <span className="font-mono text-xs text-outline">Mar 2022 - Dec 2022</span>
               </div>

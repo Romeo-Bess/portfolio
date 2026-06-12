@@ -49,10 +49,10 @@ export const Experience: React.FC = () => {
     {
       id: "micronetbd",
       company: "MicronetBD",
-      role: "Junior Salesforce Developer",
+      role: "Salesforce Engineer",
       location: "Remote / USA",
       timeline: "Mar 2022 - Dec 2022",
-      summary: "Developed customized customer relationship features and server integrations on the Salesforce CRM platform.",
+      summary: "Engineered customized CRM solutions and server integrations on the Salesforce platform for USA-based clients.",
       achievements: [
         "Built dynamic Lightning Web Components (LWC) for corporate portals, optimizing onboarding layouts.",
         "Authored batch Apex scripts and database SOQL triggers, adhering strictly to platform execution limits.",

@@ -17,6 +17,41 @@ export const Projects: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
+  // Terminal animation state (Romeo Runner card)
+  const [terminalLines, setTerminalLines] = useState<string[]>([]);
+  useEffect(() => {
+    const lines = [
+      "✓ Pathology pack loaded.",
+      "Running step 1/8: embedding...",
+      "✓ Step 1 complete (0.4s)",
+      "Running step 2/8: sectioning...",
+      "✓ Step 2 complete (0.6s)",
+      "Running step 3/8: staining H&E...",
+    ];
+    let i = 0;
+    const interval = setInterval(() => {
+      setTerminalLines((prev) => {
+        const next = [...prev, lines[i % lines.length]];
+        return next.slice(-6); // Keep last 6 lines
+      });
+      i++;
+    }, 900);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Music player waveform bars state
+  const [musicBars, setMusicBars] = useState<number[]>(() =>
+    Array.from({ length: 12 }, () => 10 + Math.random() * 70)
+  );
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMusicBars(Array.from({ length: 12 }, () => 10 + Math.random() * 80));
+      setProgress((prev) => (prev >= 100 ? 0 : prev + 1));
+    }, 300);
+    return () => clearInterval(interval);
+  }, []);
+
   // 1. Real Web Scraper state
   const [scraperUrl, setScraperUrl] = useState("https://news.ycombinator.com");
   const [scraperSelector, setScraperSelector] = useState(".titleline a");
@@ -678,7 +713,7 @@ export const Projects: React.FC = () => {
                       {/* Track display */}
                       <div className="flex items-center gap-3 bg-black/40 p-2.5 rounded-lg border border-white/5">
                         <button 
-                          onClick={() => setIsPlaying(!isPlaying)}
+                          onClick={togglePlayback}
                           className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-on-primary hover:scale-105 active:scale-95 transition-all"
                         >
                           {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current translate-x-0.5" />}

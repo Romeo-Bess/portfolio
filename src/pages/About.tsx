@@ -45,12 +45,12 @@ export const About: React.FC = () => {
       description: "Mastering the clinical realities and daily frictions of diagnostic environments."
     },
     {
-      role: "Systems Analyst",
+      role: "Salesforce Engineer",
       company: "MicronetBD",
       type: "Transition",
       tagColorClass: "text-tertiary bg-tertiary/10 dark:bg-tertiary/20",
       borderClass: "border-l-tertiary dark:border-l-tertiary-fixed",
-      description: "Bridging the gap by translating bench needs into technical requirements."
+      description: "Building CRM automation, Lightning Web Components and Apex solutions for USA-based clients."
     },
     {
       role: "Automation Specialist",
