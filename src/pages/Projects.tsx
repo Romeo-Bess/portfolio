@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Play, Pause, ExternalLink, Github, Monitor } from "lucide-react";
+import { Play, Pause, ExternalLink, Monitor, GitBranch } from "lucide-react";
 import { motion } from "framer-motion";
 
 /* ────────────────────────────────────────────────────────────
@@ -518,7 +518,7 @@ export const Projects: React.FC = () => {
                       </div>
                       <a href={project.github} target="_blank" rel="noreferrer"
                         className="p-2 rounded-lg border border-outline-variant/20 text-on-surface-variant hover:text-primary hover:border-primary/30 transition-all mt-1 shrink-0">
-                        <Github className="w-4 h-4" />
+                        <GitBranch className="w-4 h-4" />
                       </a>
                     </div>
 
@@ -557,7 +557,7 @@ export const Projects: React.FC = () => {
         <p className="font-mono text-xs text-on-surface-variant/35 uppercase tracking-widest mb-3">All projects are open source</p>
         <a href="https://github.com/Romeo-Bess" target="_blank" rel="noreferrer"
           className="inline-flex items-center gap-2 text-sm font-mono font-semibold text-primary hover:opacity-80 transition-opacity">
-          <Github className="w-4 h-4" />
+          <GitBranch className="w-4 h-4" />
           View all repositories on GitHub →
         </a>
       </div>
