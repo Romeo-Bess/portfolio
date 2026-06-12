@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Play, Pause, Volume2 } from "lucide-react";
+import { Play, Pause, ExternalLink, Github, Tv2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface ProjectCardData {
   id: string;
@@ -9,50 +10,224 @@ interface ProjectCardData {
   category: string;
   tags: string[];
   description: string;
-  cols: string;
   technologies: string[];
+  accentColor: string;
+  glowColor: string;
+  githubUrl: string;
+  liveUrl?: string;
 }
+
+/* ─── CRT Monitor Frame Component ───────────────────────────────────── */
+const CRTScreen: React.FC<{
+  children: React.ReactNode;
+  glowColor: string;
+  label?: string;
+  className?: string;
+}> = ({ children, glowColor, label, className = "" }) => (
+  <div className={`relative flex flex-col items-center ${className}`}>
+    {/* Monitor bezel */}
+    <div
+      className="relative w-full rounded-2xl overflow-hidden"
+      style={{
+        background: "linear-gradient(145deg, #1e2433 0%, #0d1017 50%, #1a1f2e 100%)",
+        boxShadow: `0 0 0 2px rgba(255,255,255,0.06), 0 0 40px ${glowColor}55, 0 20px 60px rgba(0,0,0,0.6)`,
+        padding: "10px 10px 6px",
+      }}
+    >
+      {/* Bezel top bar — camera dot + brand */}
+      <div className="flex items-center justify-between mb-2 px-1">
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
+          <span className="font-mono text-[8px] text-white/20 uppercase tracking-widest">ROMEO.DEV</span>
+        </div>
+        {label && (
+          <span className="font-mono text-[8px] uppercase tracking-widest text-white/20">{label}</span>
+        )}
+        <div className="w-2 h-2 rounded-full" style={{ background: `${glowColor}99`, boxShadow: `0 0 6px ${glowColor}` }} />
+      </div>
+
+      {/* Screen area */}
+      <div className="relative rounded-lg overflow-hidden" style={{ background: "#030508" }}>
+        {children}
+
+        {/* Scanlines overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none z-10"
+          style={{
+            background:
+              "repeating-linear-gradient(0deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 3px)",
+          }}
+        />
+
+        {/* Glass reflection */}
+        <div
+          className="absolute inset-0 pointer-events-none z-10"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 40%, rgba(255,255,255,0.02) 100%)",
+          }}
+        />
+
+        {/* Screen edge vignette */}
+        <div
+          className="absolute inset-0 pointer-events-none z-10 rounded-lg"
+          style={{
+            boxShadow: "inset 0 0 40px rgba(0,0,0,0.5)",
+          }}
+        />
+
+        {/* Colored screen glow on inner edge */}
+        <div
+          className="absolute inset-0 pointer-events-none z-[9] rounded-lg"
+          style={{
+            boxShadow: `inset 0 0 20px ${glowColor}22`,
+          }}
+        />
+      </div>
+
+      {/* Bottom bezel - speaker grille */}
+      <div className="flex justify-center gap-0.5 mt-2 px-4">
+        {Array.from({ length: 16 }).map((_, i) => (
+          <div key={i} className="w-px h-1.5 bg-white/8 rounded-full" />
+        ))}
+      </div>
+    </div>
+
+    {/* Monitor neck */}
+    <div
+      className="w-10 h-4"
+      style={{
+        background: "linear-gradient(180deg, #1a1f2e 0%, #141820 100%)",
+        clipPath: "polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)",
+      }}
+    />
+    {/* Monitor stand */}
+    <div
+      className="h-2 rounded-b-lg"
+      style={{
+        width: "55%",
+        background: "linear-gradient(180deg, #1a2030 0%, #0f1318 100%)",
+        boxShadow: `0 4px 12px rgba(0,0,0,0.5), 0 0 20px ${glowColor}22`,
+      }}
+    />
+    {/* Stand base */}
+    <div
+      className="h-1 mt-px rounded-full"
+      style={{
+        width: "70%",
+        background: "linear-gradient(90deg, transparent, #1a2030, transparent)",
+      }}
+    />
+  </div>
+);
+
+/* ─── Tech Badge ─────────────────────────────────────────────────────── */
+const TechBadge: React.FC<{ label: string }> = ({ label }) => (
+  <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-[10px] font-mono text-on-surface-variant border border-outline-variant/15 font-medium">
+    {label}
+  </span>
+);
 
 export const Projects: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  // Terminal animation state (Romeo Runner card)
+  /* ── Terminal animation (Romeo Runner) ── */
   const [terminalLines, setTerminalLines] = useState<string[]>([]);
   useEffect(() => {
     const lines = [
-      "✓ Pathology pack loaded.",
-      "Running step 1/8: embedding...",
+      "✓ System initialised.",
+      "$ romeo-runner run --target pathology_pack",
+      "⟳  Loading hardware modules...",
+      "✓ Liquid handler online (1.2s)",
+      "⟳  Step 1/8: tissue embedding...",
       "✓ Step 1 complete (0.4s)",
-      "Running step 2/8: sectioning...",
+      "⟳  Step 2/8: microtomy...",
       "✓ Step 2 complete (0.6s)",
-      "Running step 3/8: staining H&E...",
+      "⟳  Step 3/8: H&E staining...",
+      "✓ All 8 steps passed. Cycle: 4.2s",
     ];
     let i = 0;
     const interval = setInterval(() => {
       setTerminalLines((prev) => {
         const next = [...prev, lines[i % lines.length]];
-        return next.slice(-6); // Keep last 6 lines
+        return next.slice(-8);
       });
       i++;
-    }, 900);
+    }, 800);
     return () => clearInterval(interval);
   }, []);
 
-  // Music player waveform bars state
+  /* ── Music player state ── */
   const [musicBars, setMusicBars] = useState<number[]>(() =>
-    Array.from({ length: 12 }, () => 10 + Math.random() * 70)
+    Array.from({ length: 18 }, () => 10 + Math.random() * 80)
   );
   const [progress, setProgress] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const sequencerRef = useRef<any>(null);
+  const arpeggioScale = [130.81, 146.83, 164.81, 196.0, 220.0, 261.63, 293.66, 329.63];
+
+  const startAudio = () => {
+    if (!audioCtxRef.current) {
+      const AC = window.AudioContext || (window as any).webkitAudioContext;
+      audioCtxRef.current = new AC();
+      analyserRef.current = audioCtxRef.current.createAnalyser();
+      analyserRef.current.fftSize = 64;
+      gainNodeRef.current = audioCtxRef.current.createGain();
+      gainNodeRef.current.gain.value = 0.3;
+      gainNodeRef.current.connect(analyserRef.current);
+      analyserRef.current.connect(audioCtxRef.current.destination);
+    }
+    if (audioCtxRef.current.state === "suspended") audioCtxRef.current.resume();
+    setIsPlaying(true);
+    const ctx = audioCtxRef.current;
+    const dest = gainNodeRef.current!;
+    let step = 0;
+    sequencerRef.current = setInterval(() => {
+      const time = ctx.currentTime;
+      if (step % 4 === 0) {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g); g.connect(dest);
+        o.frequency.setValueAtTime(130, time);
+        o.frequency.exponentialRampToValueAtTime(0.01, time + 0.12);
+        g.gain.setValueAtTime(1.0, time);
+        g.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
+        o.start(time); o.stop(time + 0.13);
+      }
+      const noteFreq = arpeggioScale[step % arpeggioScale.length];
+      const o2 = ctx.createOscillator();
+      const g2 = ctx.createGain();
+      o2.type = "sine"; o2.connect(g2); g2.connect(dest);
+      o2.frequency.setValueAtTime(noteFreq, time);
+      g2.gain.setValueAtTime(0.2, time);
+      g2.gain.exponentialRampToValueAtTime(0.01, time + 0.22);
+      o2.start(time); o2.stop(time + 0.24);
+      step = (step + 1) % 8;
+    }, 250);
+  };
+
+  const stopAudio = () => {
+    setIsPlaying(false);
+    if (sequencerRef.current) { clearInterval(sequencerRef.current); sequencerRef.current = null; }
+  };
+
+  const togglePlayback = () => isPlaying ? stopAudio() : startAudio();
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setMusicBars(Array.from({ length: 12 }, () => 10 + Math.random() * 80));
+      setMusicBars(Array.from({ length: 18 }, () => 8 + Math.random() * 85));
       setProgress((prev) => (prev >= 100 ? 0 : prev + 1));
-    }, 300);
+    }, 280);
     return () => clearInterval(interval);
   }, []);
 
-  // 1. Real Web Scraper state
+  useEffect(() => () => { if (sequencerRef.current) clearInterval(sequencerRef.current); }, []);
+
+  /* ── Web Scraper state ── */
   const [scraperUrl, setScraperUrl] = useState("https://news.ycombinator.com");
   const [scraperSelector, setScraperSelector] = useState(".titleline a");
   const [scrapeResults, setScrapeResults] = useState<{ text: string; href?: string }[]>([]);
@@ -68,301 +243,90 @@ export const Projects: React.FC = () => {
       const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(scraperUrl)}`);
       if (!response.ok) throw new Error("CORS request failed");
       const data = await response.json();
-      const html = data.contents;
-      
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
+      const doc = new DOMParser().parseFromString(data.contents, "text/html");
       const elements = doc.querySelectorAll(scraperSelector);
-      
       const results: { text: string; href?: string }[] = [];
       elements.forEach((el) => {
         const text = el.textContent?.trim() || "";
         let href = el.getAttribute("href") || undefined;
-        if (href && href.startsWith("/")) {
-          try {
-            const urlObj = new URL(scraperUrl);
-            href = urlObj.origin + href;
-          } catch(e) {}
+        if (href?.startsWith("/")) {
+          try { href = new URL(scraperUrl).origin + href; } catch (_) {}
         }
-        if (text) {
-          results.push({ text, href });
-        }
+        if (text) results.push({ text, href });
       });
-
-      if (results.length === 0) {
-        setScrapeError("No elements matched the selector, or the page dynamically loads contents.");
-      } else {
-        setScrapeResults(results.slice(0, 8)); // Show top 8 results
-      }
-    } catch (err: any) {
-      setScrapeError("CORS proxy error. Try another domain or check selector.");
-      console.error(err);
+      if (results.length === 0) setScrapeError("No elements matched. Try adjusting the CSS selector.");
+      else setScrapeResults(results.slice(0, 8));
+    } catch {
+      setScrapeError("CORS proxy error. Try another domain or selector.");
     } finally {
       setIsScraping(false);
     }
   };
 
-  // 3. Snake canvas game loop
+  /* ── Snake canvas ── */
   const snakeCanvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const canvas = snakeCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
-    let snake = [
-      { x: 50, y: 50 },
-      { x: 40, y: 50 },
-      { x: 30, y: 50 },
-    ];
+    let snake = [{ x: 50, y: 50 }, { x: 40, y: 50 }, { x: 30, y: 50 }];
     let dir = { x: 10, y: 0 };
-    let animationId: number;
-    let frameCount = 0;
-
+    let frame = 0;
+    let animId: number;
     const draw = () => {
-      frameCount++;
-      if (frameCount % 8 === 0) { // animate speed
+      frame++;
+      if (frame % 7 === 0) {
         const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
-        
-        // boundary wrap
         if (head.x >= canvas.width) head.x = 0;
         if (head.x < 0) head.x = canvas.width - 10;
         if (head.y >= canvas.height) head.y = 0;
         if (head.y < 0) head.y = canvas.height - 10;
-        
         snake.unshift(head);
         snake.pop();
-
-        // random movement
-        if (Math.random() < 0.15) {
-          const possibleDirs = [
-            { x: 10, y: 0 },
-            { x: -10, y: 0 },
-            { x: 0, y: 10 },
-            { x: 0, y: -10 }
-          ].filter(d => d.x !== -dir.x || d.y !== -dir.y);
-          dir = possibleDirs[Math.floor(Math.random() * possibleDirs.length)];
+        if (Math.random() < 0.14) {
+          const opts = [{ x: 10, y: 0 }, { x: -10, y: 0 }, { x: 0, y: 10 }, { x: 0, y: -10 }].filter(
+            (d) => d.x !== -dir.x || d.y !== -dir.y
+          );
+          dir = opts[Math.floor(Math.random() * opts.length)];
         }
       }
-
       ctx.fillStyle = "#03060a";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Grid
-      ctx.strokeStyle = "rgba(0, 80, 203, 0.05)";
+      ctx.strokeStyle = "rgba(0,80,203,0.06)";
       ctx.lineWidth = 0.5;
-      for (let i = 0; i < canvas.width; i += 10) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, canvas.height);
-        ctx.stroke();
-      }
-      for (let j = 0; j < canvas.height; j += 10) {
-        ctx.beginPath();
-        ctx.moveTo(0, j);
-        ctx.lineTo(canvas.width, j);
-        ctx.stroke();
-      }
-
-      // Food
+      for (let i = 0; i < canvas.width; i += 10) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
+      for (let j = 0; j < canvas.height; j += 10) { ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke(); }
+      ctx.shadowColor = "#ff4444"; ctx.shadowBlur = 8;
       ctx.fillStyle = "#ff5555";
       ctx.fillRect(80, 40, 8, 8);
-
-      // Snake body
+      ctx.shadowBlur = 0;
       snake.forEach((part, idx) => {
-        ctx.fillStyle = idx === 0 ? "#0066ff" : "rgba(107, 56, 212, 0.8)";
+        ctx.shadowColor = idx === 0 ? "#0066ff" : "#6b38d4";
+        ctx.shadowBlur = idx === 0 ? 10 : 4;
+        ctx.fillStyle = idx === 0 ? "#0077ff" : `rgba(107,56,212,${0.9 - idx * 0.04})`;
         ctx.fillRect(part.x, part.y, 8, 8);
+        ctx.shadowBlur = 0;
       });
-
-      animationId = requestAnimationFrame(draw);
-    };
-
-    draw();
-    return () => cancelAnimationFrame(animationId);
-  }, []);
-
-  // 4. Real Web Audio Sequencer & Visualizer State
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const sequencerIntervalRef = useRef<any>(null);
-  const visualizerCanvasRef = useRef<HTMLCanvasElement>(null);
-  const gainNodeRef = useRef<GainNode | null>(null);
-
-  // Notes of a pentatonic arpeggio: C3, D3, E3, G3, A3, C4, D4, E4
-  const arpeggioScale = [130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66, 329.63];
-
-  const togglePlayback = () => {
-    if (isPlaying) {
-      stopAudio();
-    } else {
-      startAudio();
-    }
-  };
-
-  const startAudio = () => {
-    // Initialize AudioContext and Analyser
-    if (!audioCtxRef.current) {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      audioCtxRef.current = new AudioContextClass();
-      
-      analyserRef.current = audioCtxRef.current.createAnalyser();
-      analyserRef.current.fftSize = 64; // Small size for visualizer bars
-      
-      gainNodeRef.current = audioCtxRef.current.createGain();
-      gainNodeRef.current.gain.value = isMuted ? 0 : 0.3; // Default volume
-      
-      gainNodeRef.current.connect(analyserRef.current);
-      analyserRef.current.connect(audioCtxRef.current.destination);
-    }
-
-    if (audioCtxRef.current.state === "suspended") {
-      audioCtxRef.current.resume();
-    }
-
-    setIsPlaying(true);
-    const ctx = audioCtxRef.current;
-    const dest = gainNodeRef.current!;
-    let step = 0;
-
-    // Start 8-step sequencer loop (120 BPM = 250ms per step)
-    sequencerIntervalRef.current = setInterval(() => {
-      const time = ctx.currentTime;
-
-      // Step 0 & 4: Kick sweep
-      if (step % 4 === 0) {
-        const osc = ctx.createOscillator();
-        const oscGain = ctx.createGain();
-        osc.connect(oscGain);
-        oscGain.connect(dest);
-
-        osc.frequency.setValueAtTime(130, time);
-        osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.12);
-        oscGain.gain.setValueAtTime(1.0, time);
-        oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
-
-        osc.start(time);
-        osc.stop(time + 0.13);
-      }
-
-      // Step 2 & 6: Hi-Hat sweep
-      if (step % 4 === 2) {
-        const osc = ctx.createOscillator();
-        const oscGain = ctx.createGain();
-        osc.type = "triangle";
-        osc.connect(oscGain);
-        oscGain.connect(dest);
-
-        osc.frequency.setValueAtTime(1000, time);
-        oscGain.gain.setValueAtTime(0.4, time);
-        oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.07);
-
-        osc.start(time);
-        osc.stop(time + 0.08);
-      }
-
-      // Every step: Synth arpeggiator note
-      const noteFreq = arpeggioScale[step % arpeggioScale.length];
-      const osc = ctx.createOscillator();
-      const oscGain = ctx.createGain();
-      osc.type = "sine";
-      osc.connect(oscGain);
-      oscGain.connect(dest);
-
-      osc.frequency.setValueAtTime(noteFreq, time);
-      oscGain.gain.setValueAtTime(0.2, time);
-      oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.22);
-
-      osc.start(time);
-      osc.stop(time + 0.24);
-
-      setCurrentStep(step);
-      step = (step + 1) % 8;
-    }, 250);
-  };
-
-  const stopAudio = () => {
-    setIsPlaying(false);
-    if (sequencerIntervalRef.current) {
-      clearInterval(sequencerIntervalRef.current);
-      sequencerIntervalRef.current = null;
-    }
-  };
-
-  // Toggle Mute
-  useEffect(() => {
-    if (gainNodeRef.current) {
-      gainNodeRef.current.gain.value = isMuted ? 0 : 0.3;
-    }
-  }, [isMuted]);
-
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      if (sequencerIntervalRef.current) clearInterval(sequencerIntervalRef.current);
-    };
-  }, []);
-
-  // Web Audio Visualizer Loop
-  useEffect(() => {
-    let animId: number;
-    const canvas = visualizerCanvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const draw = () => {
-      ctx.fillStyle = "#060a0f";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      if (isPlaying && analyserRef.current) {
-        const bufferLength = analyserRef.current.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        analyserRef.current.getByteFrequencyData(dataArray);
-
-        const barWidth = (canvas.width / bufferLength) * 1.6;
-        let barHeight;
-        let x = 0;
-
-        for (let i = 0; i < bufferLength; i++) {
-          barHeight = dataArray[i] / 2.5;
-
-          // double sided bar visualizer
-          ctx.fillStyle = `rgba(0, 102, 255, ${barHeight / 100 + 0.35})`;
-          ctx.fillRect(x, canvas.height / 2 - barHeight / 2, barWidth - 1.5, barHeight);
-
-          x += barWidth;
-        }
-      } else {
-        // Draw static center line
-        ctx.strokeStyle = "rgba(0, 102, 255, 0.15)";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(0, canvas.height / 2);
-        ctx.lineTo(canvas.width, canvas.height / 2);
-        ctx.stroke();
-      }
-
       animId = requestAnimationFrame(draw);
     };
-
     draw();
     return () => cancelAnimationFrame(animId);
-  }, [isPlaying]);
+  }, []);
 
-  const projectsData: ProjectCardData[] = [
+  /* ── Project data ── */
+  const projects: ProjectCardData[] = [
     {
       id: "ultimate-mini-web-scraper",
       title: "Ultimate Mini Web Scraper",
       slug: "ultimate-mini-web-scraper",
       category: "Data Analytics",
       tags: ["Data Analytics", "Automation"],
-      description: "A high-performance concurrent web crawler and scraper that parses content from targeted pages, extracts structural elements, and exports datasets.",
-      cols: "md:col-span-8",
-      technologies: ["Go", "Node.js", "Cheerio", "Puppeteer"]
+      description: "A live, in-browser web crawler that fetches any URL via CORS proxy, parses the HTML with DOMParser, and extracts elements matching your CSS selector — all client-side.",
+      technologies: ["TypeScript", "DOMParser API", "CORS Proxy", "Node.js"],
+      accentColor: "#0066ff",
+      glowColor: "#0066ff",
+      githubUrl: "https://github.com/Romeo-Bess/ultimate-mini-web-scraper",
     },
     {
       id: "romeo-runner",
@@ -370,19 +334,24 @@ export const Projects: React.FC = () => {
       slug: "romeo-runner",
       category: "Automation",
       tags: ["Automation"],
-      description: "A laboratory automation orchestrator and task runner designed to monitor hardware metrics, dispatch routing logic, and run diagnostic cycles.",
-      cols: "md:col-span-4",
-      technologies: ["Rust", "TypeScript", "Go", "Docker"]
+      description: "A lab automation task runner that monitors hardware metrics, dispatches routing logic, and executes diagnostic cycles — shown here as a live terminal stream.",
+      technologies: ["TypeScript", "Go", "Docker", "Linux"],
+      accentColor: "#00d084",
+      glowColor: "#00d084",
+      githubUrl: "https://github.com/Romeo-Bess/Romeo-Runner",
+      liveUrl: "https://romeo-runner.vercel.app/",
     },
     {
       id: "snake",
-      title: "Retro Snake Game",
+      title: "Retro Snake",
       slug: "snake",
       category: "Web Applications",
       tags: ["Web Applications"],
-      description: "A polished, responsive HTML5 canvas-based Retro Snake Game with smooth movement animations, high-score tracking, and speed leveling systems.",
-      cols: "md:col-span-6",
-      technologies: ["HTML5 Canvas", "JavaScript", "CSS3"]
+      description: "A polished HTML5 Canvas Snake game with smooth frame-rate movement, neon glow rendering, and boundary wrapping — runs live in your browser.",
+      technologies: ["HTML5 Canvas", "JavaScript", "CSS3"],
+      accentColor: "#a855f7",
+      glowColor: "#a855f7",
+      githubUrl: "https://github.com/Romeo-Bess/Snake",
     },
     {
       id: "music-app",
@@ -390,401 +359,401 @@ export const Projects: React.FC = () => {
       slug: "music-app",
       category: "Web Applications",
       tags: ["Web Applications"],
-      description: "A full-featured personal music streaming platform featuring track playback, playlist curation, album views, and ambient visualizer panels.",
-      cols: "md:col-span-6",
-      technologies: ["React", "TypeScript", "Tailwind CSS", "Web Audio API"]
-    }
+      description: "An in-browser audio engine built on the Web Audio API. Plays a programmatic pentatonic arpeggio sequencer with kick drums and real-time animated waveform.",
+      technologies: ["React", "TypeScript", "Web Audio API", "Tailwind CSS"],
+      accentColor: "#f59e0b",
+      glowColor: "#f59e0b",
+      githubUrl: "https://github.com/Romeo-Bess/Music-App",
+    },
   ];
 
-  const filtered = projectsData.filter((p) => {
-    const matchesCategory =
-      selectedCategory === "All" || p.tags.includes(selectedCategory);
-    const matchesSearch =
+  const filtered = projects.filter((p) => {
+    const matchCat = selectedCategory === "All" || p.tags.includes(selectedCategory);
+    const matchSearch =
       p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.technologies.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
+    return matchCat && matchSearch;
   });
 
-  return (
-    <div className="max-w-[1280px] w-full mx-auto px-margin-mobile md:px-margin-desktop pt-32 pb-24 flex flex-col gap-16 relative z-10 text-left font-sans">
-      {/* Background blobs */}
-      <div className="bg-blob blob-1 absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none -z-10"></div>
-      <div className="bg-blob blob-2 absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-tertiary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
-
-      {/* Header Section */}
-      <header className="max-w-3xl">
-        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-on-surface leading-[1.1] mb-6">
-          Selected Projects
-        </h1>
-        <p className="font-body text-base sm:text-lg text-on-surface-variant leading-relaxed">
-          A showcase of production-grade systems and interactive architectures. Explore live telemetry, simulated environments, and core operational mechanics of recent builds.
-        </p>
-
-        {/* Search & Filter bar */}
-        <div className="glass-surface rounded-2xl p-2 mt-8 flex flex-col md:flex-row gap-4 items-center w-full max-w-4xl border border-outline-variant/30 dark:border-outline/20">
-          <div className="flex-grow flex items-center bg-white/60 dark:bg-black/30 rounded-xl px-4 py-2.5 border border-transparent transition-all w-full focus-within:bg-white dark:focus-within:bg-black/50 border-outline-variant/10">
-            <span className="material-symbols-outlined text-outline dark:text-outline-variant mr-3">search</span>
-            <input
-              className="bg-transparent border-none focus:ring-0 text-on-surface dark:text-surface-bright w-full font-body text-sm placeholder:text-outline-variant dark:placeholder:text-outline p-0 focus:outline-none"
-              placeholder="Search projects, technologies..."
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <div className="hidden md:flex items-center justify-center bg-surface-container dark:bg-surface-container-highest px-2 py-1 rounded text-[10px] text-outline font-mono border border-outline-variant/30 dark:border-outline/20 ml-2 shadow-sm">
-              ⌘ K
+  /* ── Screen content renderers ── */
+  const renderScreen = (id: string) => {
+    if (id === "ultimate-mini-web-scraper") {
+      return (
+        <div className="h-72 flex flex-col gap-2.5 p-4 bg-[#060a0f]">
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="font-mono text-[8px] text-blue-400/70 uppercase tracking-widest block mb-1">Target URL</label>
+              <input
+                type="text"
+                className="w-full bg-black/60 border border-blue-500/20 rounded-md px-2.5 py-1.5 text-[11px] text-blue-100 font-mono focus:outline-none focus:border-blue-400/60 placeholder:text-blue-400/30"
+                value={scraperUrl}
+                onChange={(e) => setScraperUrl(e.target.value)}
+                placeholder="https://example.com"
+              />
+            </div>
+            <div className="w-2/5">
+              <label className="font-mono text-[8px] text-blue-400/70 uppercase tracking-widest block mb-1">CSS Selector</label>
+              <input
+                type="text"
+                className="w-full bg-black/60 border border-blue-500/20 rounded-md px-2.5 py-1.5 text-[11px] text-blue-100 font-mono focus:outline-none focus:border-blue-400/60"
+                value={scraperSelector}
+                onChange={(e) => setScraperSelector(e.target.value)}
+              />
             </div>
           </div>
-          <div className="flex flex-wrap gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 px-1 hide-scrollbar">
+          <button
+            onClick={handleScrape}
+            disabled={isScraping}
+            className="w-full bg-blue-600/80 hover:bg-blue-500/90 text-white font-mono text-[10px] uppercase tracking-widest py-2 rounded-md flex items-center justify-center gap-2 transition-all disabled:opacity-50 border border-blue-400/20"
+          >
+            {isScraping ? (
+              <><span className="w-3 h-3 border-2 border-white/50 border-t-white rounded-full animate-spin" />Fetching...</>
+            ) : (
+              <><span className="text-blue-300">▶</span> Run Scrape</>
+            )}
+          </button>
+          <div className="flex-1 bg-black/70 rounded-md border border-white/5 p-2.5 overflow-y-auto font-mono text-[10px] space-y-1 min-h-0">
+            {scrapeError && <div className="text-red-400">{scrapeError}</div>}
+            {!scrapeError && scrapeResults.length === 0 && (
+              <div className="text-blue-400/30 text-center pt-3 leading-relaxed">
+                Awaiting scrape command.<br/>Enter URL → selector → run.
+              </div>
+            )}
+            {!scrapeError && scrapeResults.map((r, i) => (
+              <div key={i} className="border-b border-white/5 pb-1">
+                <span className="text-blue-400 font-bold mr-1.5">[{i + 1}]</span>
+                <span className="text-emerald-300">{r.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    if (id === "romeo-runner") {
+      return (
+        <div className="h-72 bg-[#030508] flex flex-col font-mono text-[10px]">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5 bg-black/40">
+            <div className="flex gap-1">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
+            </div>
+            <span className="text-emerald-400/60 text-[9px] tracking-widest">romeo-runner — bash</span>
+          </div>
+          <div className="flex-1 p-3 overflow-y-auto space-y-1 leading-relaxed">
+            <div><span className="text-emerald-400">romeo@dev</span><span className="text-white/30">:~$</span> <span className="text-white/80">romeo-runner init --env production</span></div>
+            {terminalLines.map((line, i) => {
+              const isSuccess = line.startsWith("✓");
+              const isCmd = line.startsWith("$");
+              const isStep = line.startsWith("⟳");
+              return (
+                <div key={i} className={
+                  isSuccess ? "text-emerald-400" :
+                  isCmd ? "text-white/80" :
+                  isStep ? "text-yellow-400/70" :
+                  "text-white/35"
+                }>
+                  {isCmd && <><span className="text-emerald-400">romeo@dev</span><span className="text-white/30">:~</span> </>}
+                  {line}
+                </div>
+              );
+            })}
+            <span className="inline-block w-1.5 h-3 bg-emerald-400 animate-pulse" />
+          </div>
+        </div>
+      );
+    }
+    if (id === "snake") {
+      return (
+        <div className="h-72 flex items-center justify-center bg-[#03060a] relative">
+          <canvas ref={snakeCanvasRef} width={300} height={240} className="w-full h-full object-cover" />
+          <div className="absolute top-2 right-2 font-mono text-[8px] text-purple-400/60 uppercase tracking-widest">HTML5 Canvas</div>
+        </div>
+      );
+    }
+    if (id === "music-app") {
+      return (
+        <div className="h-72 bg-[#0a0a12] flex flex-col items-center justify-center gap-4 p-4">
+          {/* Album art + controls */}
+          <div className="w-full max-w-xs bg-black/50 border border-amber-400/10 rounded-xl p-4 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              {/* Vinyl record */}
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-amber-400/20 flex items-center justify-center relative shrink-0" style={{ animation: isPlaying ? "spin 3s linear infinite" : "none" }}>
+                <div className="w-3 h-3 rounded-full bg-amber-400/30 border border-amber-400/50" />
+                <div className="absolute inset-2 rounded-full" style={{ background: "repeating-radial-gradient(circle at center, transparent 0px, transparent 2px, rgba(255,180,0,0.04) 2px, rgba(255,180,0,0.04) 3px)" }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-display font-semibold text-xs text-white truncate">Coding Beats</div>
+                <div className="font-mono text-[9px] text-amber-400/50">Romeo Bessenaar</div>
+              </div>
+              <button
+                onClick={togglePlayback}
+                className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+                style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)", boxShadow: "0 0 20px rgba(245,158,11,0.4)" }}
+              >
+                {isPlaying ? <Pause className="w-4 h-4 text-black fill-black" /> : <Play className="w-4 h-4 text-black fill-black translate-x-0.5" />}
+              </button>
+            </div>
+
+            {/* Progress bar */}
+            <div className="flex items-center gap-2 font-mono text-[8px] text-white/30">
+              <span>0:{Math.floor(progress * 0.6).toString().padStart(2, "0")}</span>
+              <div className="flex-1 h-0.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: "linear-gradient(90deg, #f59e0b, #d97706)" }} />
+              </div>
+              <span>1:00</span>
+            </div>
+
+            {/* Waveform visualizer */}
+            <div className="flex items-end justify-center gap-0.5 h-10">
+              {musicBars.map((h, i) => (
+                <div
+                  key={i}
+                  className="rounded-full transition-all duration-200"
+                  style={{
+                    width: "3px",
+                    height: `${isPlaying ? h : 12}%`,
+                    background: `rgba(245,158,11,${0.4 + (i / musicBars.length) * 0.5})`,
+                    boxShadow: isPlaying ? "0 0 4px rgba(245,158,11,0.4)" : "none",
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="font-mono text-[9px] text-amber-400/30 uppercase tracking-widest">Web Audio API · Live Synthesis</div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="min-h-screen w-full">
+      {/* ── PAGE HEADER ─────────────────────────────────── */}
+      <div className="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop pt-32 pb-12">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-mono text-primary mb-5">
+            <Tv2 className="w-3.5 h-3.5" />
+            <span>INTERACTIVE DEMOS — LIVE IN BROWSER</span>
+          </div>
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-on-surface leading-[1.1] mb-4">
+            Selected<br />
+            <span className="text-gradient">Projects</span>
+          </h1>
+          <p className="font-body text-base text-on-surface-variant max-w-xl leading-relaxed mb-8">
+            Every demo below runs live — no screenshots. Interact with the scraper, watch the snake move, hit play on the synth. Each project card is a working product.
+          </p>
+
+          {/* Filter bar */}
+          <div className="flex flex-wrap gap-2">
             {["All", "Automation", "Data Analytics", "Web Applications"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-full font-mono text-[10px] uppercase tracking-wider transition-colors border ${
+                className={`px-4 py-2 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all border ${
                   selectedCategory === cat
-                    ? "bg-primary text-on-primary border-primary"
-                    : "bg-surface-container text-on-surface-variant border-outline-variant/15 hover:bg-surface-container-high"
+                    ? "bg-primary text-on-primary border-primary shadow-lg shadow-primary/20"
+                    : "bg-surface-container-low text-on-surface-variant border-outline-variant/20 hover:border-primary/40 hover:text-primary"
                 }`}
               >
                 {cat}
               </button>
             ))}
+            <input
+              type="text"
+              placeholder="Search…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="px-4 py-2 rounded-full font-mono text-[10px] bg-surface-container-low border border-outline-variant/20 text-on-surface placeholder:text-outline focus:outline-none focus:border-primary/50 transition-colors"
+            />
           </div>
-        </div>
-      </header>
+        </motion.div>
+      </div>
 
-      {/* Projects Grid */}
-      <section className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+      {/* ── PROJECTS GRID ───────────────────────────────── */}
+      <div className="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop pb-32">
         {filtered.length === 0 ? (
-          <div className="col-span-12 py-16 text-center text-on-surface-variant font-body">
-            No projects matched your criteria. Try adjusting filters.
+          <div className="py-24 text-center text-on-surface-variant font-body">
+            No projects matched. Try adjusting your filters.
           </div>
         ) : (
-          filtered.map((project) => {
-            if (project.id === "ultimate-mini-web-scraper") {
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+            {/* ── ROW 1: Scraper (wide) + Romeo Runner (narrow) ── */}
+            {filtered.find((p) => p.id === "ultimate-mini-web-scraper") && (() => {
+              const p = projects.find((x) => x.id === "ultimate-mini-web-scraper")!;
               return (
-                <article key={project.id} className={`${project.cols} glass-card rounded-2xl flex flex-col overflow-hidden group border border-outline-variant/20 hover:border-primary/20`}>
-                  {/* Interactive Scraper Demo */}
-                  <div className="h-64 md:h-80 bg-[#060a0f] border-b border-outline-variant/30 flex flex-col overflow-hidden p-4">
-                    <div className="flex flex-col gap-3 flex-grow justify-center max-w-lg mx-auto w-full">
-                      <div className="flex gap-2">
-                        <div className="flex-1 flex flex-col gap-1">
-                          <label className="font-mono text-[9px] text-outline uppercase tracking-wider">Target URL</label>
-                          <input 
-                            type="text" 
-                            className="bg-black/45 border border-outline-variant/30 rounded-lg px-3 py-1.5 text-xs text-on-surface font-body w-full focus:outline-none focus:border-primary"
-                            value={scraperUrl}
-                            onChange={(e) => setScraperUrl(e.target.value)}
-                            placeholder="https://example.com"
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1 w-2/5">
-                          <label className="font-mono text-[9px] text-outline uppercase tracking-wider">CSS Selector</label>
-                          <input 
-                            type="text" 
-                            className="bg-black/45 border border-outline-variant/30 rounded-lg px-3 py-1.5 text-xs text-on-surface font-body w-full focus:outline-none focus:border-primary"
-                            value={scraperSelector}
-                            onChange={(e) => setScraperSelector(e.target.value)}
-                            placeholder="a"
-                          />
-                        </div>
-                      </div>
-                      <button 
-                        onClick={handleScrape}
-                        disabled={isScraping}
-                        className="bg-primary text-on-primary font-mono text-[10px] uppercase py-2 px-4 rounded-lg hover:opacity-90 transition-all font-bold flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50"
-                      >
-                        {isScraping ? (
-                          <>
-                            <span className="w-3.5 h-3.5 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></span>
-                            SCRAPING...
-                          </>
-                        ) : (
-                          <>
-                            <span className="material-symbols-outlined text-xs">network_ping</span>
-                            RUN CLIENT SCRAPE
-                          </>
-                        )}
-                      </button>
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                  className="lg:col-span-7"
+                >
+                  <div className="glass-card rounded-2xl overflow-hidden border border-outline-variant/20 hover:border-primary/25 transition-all group">
+                    {/* Screen */}
+                    <div className="p-6 pb-4" style={{ background: "linear-gradient(135deg, rgba(0,102,255,0.04) 0%, transparent 60%)" }}>
+                      <CRTScreen glowColor={p.glowColor} label="SCRAPER-v2.1">
+                        {renderScreen(p.id)}
+                      </CRTScreen>
+                    </div>
 
-                      {/* Scrape results list */}
-                      <div className="bg-black/60 rounded-xl p-3 border border-white/5 h-28 md:h-36 overflow-y-auto font-mono text-[10px] text-left">
-                        {scrapeError && <div className="text-red-400">{scrapeError}</div>}
-                        {!scrapeError && scrapeResults.length === 0 && (
-                          <div className="text-outline/55 flex flex-col items-center justify-center h-full text-center">
-                            <span>Ready to scrape. Click button to fetch live elements.</span>
-                          </div>
-                        )}
-                        {!scrapeError && scrapeResults.map((res, rIdx) => (
-                          <div key={rIdx} className="border-b border-white/5 pb-1 mb-1 last:border-b-0 last:pb-0">
-                            <span className="text-primary font-bold mr-1">[{rIdx + 1}]</span>
-                            <span className="text-on-surface select-all">{res.text}</span>
-                            {res.href && (
-                              <a 
-                                href={res.href} 
-                                target="_blank" 
-                                rel="noreferrer" 
-                                className="text-tertiary block truncate hover:underline text-[9px]"
-                              >
-                                {res.href}
-                              </a>
-                            )}
-                          </div>
-                        ))}
+                    {/* Info */}
+                    <div className="px-7 pb-7 pt-2">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <span className="font-mono text-[9px] uppercase tracking-widest text-primary/70 block mb-1">{p.category}</span>
+                          <h2 className="font-display text-xl font-bold text-on-surface">{p.title}</h2>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <a href={p.githubUrl} target="_blank" rel="noreferrer" className="p-2 rounded-lg border border-outline-variant/20 text-on-surface-variant hover:text-primary hover:border-primary/30 transition-all">
+                            <Github className="w-4 h-4" />
+                          </a>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="p-8 flex flex-col flex-grow text-left">
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="font-display font-bold text-2xl text-on-surface">{project.title}</h3>
-                      <span className="px-2.5 py-0.5 rounded-full bg-secondary-container/10 text-secondary border border-secondary/20 text-[10px] font-mono font-bold">
-                        {project.category}
-                      </span>
-                    </div>
-                    <p className="font-body text-sm text-on-surface-variant mb-6 flex-grow leading-relaxed">
-                      {project.description}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 mb-6">
-                      {project.technologies.map((t, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded bg-surface-container-high text-[10px] font-mono text-on-surface-variant border border-outline-variant/10 font-medium">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                    {/* Metrics Footer */}
-                    <div className="grid grid-cols-3 gap-4 border-t border-outline-variant/15 pt-6 mb-6 font-mono text-[10px] text-left">
-                      <div>
-                        <div className="text-outline uppercase tracking-wider">CORS Proxy</div>
-                        <div className="font-semibold text-xs text-on-surface mt-1">allorigins.win</div>
+                      <p className="font-body text-sm text-on-surface-variant leading-relaxed mb-4">{p.description}</p>
+                      <div className="flex flex-wrap gap-1.5 mb-5">
+                        {p.technologies.map((t) => <TechBadge key={t} label={t} />)}
                       </div>
-                      <div>
-                        <div className="text-outline uppercase tracking-wider">Parser</div>
-                        <div className="font-semibold text-xs text-on-surface mt-1">DOMParser API</div>
-                      </div>
-                      <div>
-                        <div className="text-outline uppercase tracking-wider">Mode</div>
-                        <div className="font-semibold text-xs text-on-surface mt-1">Asynchronous</div>
-                      </div>
-                    </div>
-                    <div className="flex gap-4">
-                      <a href="https://github.com/Romeo-Bess/ultimate-mini-web-scraper" target="_blank" rel="noreferrer" className="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-mono text-xs flex items-center gap-1.5 hover:opacity-95 shadow-[0_0_15px_rgba(0,80,203,0.1)] transition-all">
-                        <span className="material-symbols-outlined text-[16px]">open_in_new</span>
-                        Repository
-                      </a>
-                      <Link to={`/projects/${project.slug}`} className="border border-outline-variant text-on-surface px-5 py-2.5 rounded-lg font-mono text-xs flex items-center gap-1.5 hover:border-primary hover:text-primary transition-colors">
-                        Case Study
-                        <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      <Link to={`/projects/${p.slug}`} className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-primary hover:text-primary/80 transition-colors group/link">
+                        <span>View Case Study</span>
+                        <span className="group-hover/link:translate-x-0.5 transition-transform">→</span>
                       </Link>
                     </div>
                   </div>
-                </article>
+                </motion.div>
               );
-            }
+            })()}
 
-            if (project.id === "snake") {
+            {filtered.find((p) => p.id === "romeo-runner") && (() => {
+              const p = projects.find((x) => x.id === "romeo-runner")!;
               return (
-                <article key={project.id} className={`${project.cols} glass-card rounded-2xl flex flex-col overflow-hidden group border border-outline-variant/20 hover:border-primary/20`}>
-                  {/* Canvas Game Area */}
-                  <div className="h-48 relative overflow-hidden bg-surface-container-highest flex items-center justify-center">
-                    <canvas 
-                      ref={snakeCanvasRef} 
-                      width={280} 
-                      height={180} 
-                      className="w-full h-full object-cover border-b border-outline-variant/10 shadow-inner" 
-                    />
-                    <div className="absolute top-3 right-3 bg-secondary/15 text-secondary text-[9px] font-mono font-bold px-2 py-0.5 rounded border border-secondary/25">
-                      HTML5 Canvas
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                  className="lg:col-span-5"
+                >
+                  <div className="glass-card rounded-2xl overflow-hidden border border-outline-variant/20 hover:border-emerald-500/25 transition-all group h-full flex flex-col">
+                    <div className="p-6 pb-4 flex-shrink-0" style={{ background: "linear-gradient(135deg, rgba(0,208,132,0.04) 0%, transparent 60%)" }}>
+                      <CRTScreen glowColor={p.glowColor} label="TERMINAL">
+                        {renderScreen(p.id)}
+                      </CRTScreen>
+                    </div>
+                    <div className="px-7 pb-7 pt-2 flex flex-col flex-grow">
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-emerald-400/70 block mb-1">{p.category}</span>
+                      <h2 className="font-display text-xl font-bold text-on-surface mb-2">{p.title}</h2>
+                      <p className="font-body text-sm text-on-surface-variant leading-relaxed mb-4 flex-grow">{p.description}</p>
+                      <div className="flex flex-wrap gap-1.5 mb-5">
+                        {p.technologies.map((t) => <TechBadge key={t} label={t} />)}
+                      </div>
+                      <div className="flex gap-3">
+                        <a href={p.githubUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs font-mono text-on-surface-variant hover:text-primary transition-colors border border-outline-variant/20 px-3 py-1.5 rounded-lg hover:border-primary/30">
+                          <Github className="w-3.5 h-3.5" />Repository
+                        </a>
+                        {p.liveUrl && (
+                          <a href={p.liveUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs font-mono text-on-primary px-4 py-1.5 rounded-lg transition-all" style={{ background: "linear-gradient(135deg, #00d084, #00b36e)", boxShadow: "0 4px 15px rgba(0,208,132,0.3)" }}>
+                            <ExternalLink className="w-3.5 h-3.5" />Live Demo
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="p-6 flex flex-col flex-grow text-left">
-                    <h3 className="font-display font-semibold text-lg text-on-surface mb-2">{project.title}</h3>
-                    <p className="font-body text-xs sm:text-sm text-on-surface-variant mb-6 flex-grow leading-relaxed">
-                      {project.description}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 mb-6">
-                      {project.technologies.map((t, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded bg-surface-container-high text-[10px] font-mono text-on-surface-variant border border-outline-variant/10 font-medium">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="bg-surface-container-low/40 rounded-xl p-4 border border-outline-variant/10 mb-6 flex justify-between items-center">
-                      <span className="font-mono text-[10px] text-outline uppercase">Movement</span>
-                      <span className="font-mono text-xs font-bold text-tertiary">Smooth Frame Loop</span>
-                    </div>
-                    <div className="flex gap-4">
-                      <a href="https://github.com/Romeo-Bess/Snake" target="_blank" rel="noreferrer" className="bg-primary text-on-primary px-4 py-2 rounded-lg font-mono text-xs flex items-center gap-1.5 hover:opacity-95 shadow-[0_0_15px_rgba(0,80,203,0.1)] transition-all">
-                        <span className="material-symbols-outlined text-[14px]">open_in_new</span>
-                        Repository
-                      </a>
-                      <Link to={`/projects/${project.slug}`} className="inline-flex items-center gap-1 text-xs font-mono font-bold text-outline hover:text-primary pt-2 ml-auto">
-                        <span>Read Case Study</span>
-                        <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-                      </Link>
-                    </div>
-                  </div>
-                </article>
+                </motion.div>
               );
-            }
+            })()}
 
-            if (project.id === "romeo-runner") {
+            {/* ── ROW 2: Snake + Music (equal halves) ── */}
+            {filtered.find((p) => p.id === "snake") && (() => {
+              const p = projects.find((x) => x.id === "snake")!;
               return (
-                <article key={project.id} className={`${project.cols} glass-card rounded-2xl flex flex-col overflow-hidden group border border-outline-variant/20 hover:border-primary/20`}>
-                  {/* Live typing terminal area */}
-                  <div className="h-48 bg-[#030508] border-b border-outline-variant/30 flex flex-col font-mono text-left">
-                    <div className="h-8 bg-surface-container-lowest border-b border-white/5 flex items-center px-4 gap-4">
-                      <span className="text-[10px] text-outline font-mono font-bold uppercase">bash</span>
-                      <span className="text-[10px] text-tertiary font-mono font-bold border-b border-tertiary pb-1 mt-1">runner.log</span>
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+                  className="lg:col-span-6"
+                >
+                  <div className="glass-card rounded-2xl overflow-hidden border border-outline-variant/20 hover:border-purple-500/25 transition-all group">
+                    <div className="p-6 pb-4" style={{ background: "linear-gradient(135deg, rgba(168,85,247,0.05) 0%, transparent 60%)" }}>
+                      <CRTScreen glowColor={p.glowColor} label="ARCADE-v1">
+                        {renderScreen(p.id)}
+                      </CRTScreen>
                     </div>
-                    <div className="flex-grow p-4 text-xs font-mono text-outline leading-relaxed overflow-y-auto">
-                      <div><span className="text-primary">$</span> romeo-runner init --env production</div>
-                      <div className="text-outline/60">Connecting to hardware controllers (1.2s)</div>
-                      <div className="text-tertiary">✓ Liquid handler interface online.</div>
-                      <div><span className="text-primary">$</span> romeo-runner run --target pathology_pack</div>
-                      <div className="text-outline/60">Executing diagnostic loop...</div>
-                      {terminalLines.map((line, lIdx) => {
-                        const isSuccess = line && line.startsWith("✓");
-                        return (
-                          <div key={lIdx} className={isSuccess ? "text-tertiary" : "text-outline/60"}>
-                            {line}
-                          </div>
-                        );
-                      })}
-                      <span className="inline-block w-1.5 h-3.5 bg-tertiary animate-pulse ml-0.5" />
-                    </div>
-                  </div>
-
-                  <div className="p-6 flex flex-col flex-grow text-left">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                          <span className="material-symbols-outlined text-lg">precision_manufacturing</span>
-                        </div>
-                        <h3 className="font-display font-semibold text-lg text-on-surface">{project.title}</h3>
+                    <div className="px-7 pb-7 pt-2">
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-purple-400/70 block mb-1">{p.category}</span>
+                      <h2 className="font-display text-xl font-bold text-on-surface mb-2">{p.title}</h2>
+                      <p className="font-body text-sm text-on-surface-variant leading-relaxed mb-4">{p.description}</p>
+                      <div className="flex flex-wrap gap-1.5 mb-5">
+                        {p.technologies.map((t) => <TechBadge key={t} label={t} />)}
                       </div>
-                      <a href="https://github.com/Romeo-Bess/Romeo-Runner" target="_blank" rel="noreferrer" className="text-outline hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-[18px]">open_in_new</span>
-                      </a>
-                    </div>
-                    <p className="font-body text-xs sm:text-sm text-on-surface-variant mb-6 flex-grow leading-relaxed">
-                      {project.description}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 mb-6">
-                      {project.technologies.map((t, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded bg-surface-container-high text-[10px] font-mono text-on-surface-variant border border-outline-variant/10 font-medium">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex justify-between items-center border-t border-outline-variant/10 pt-4 mt-auto font-mono text-[10px] text-outline mb-4">
-                      <span>Cycle Latency</span>
-                      <span className="text-primary font-bold">&lt; 250ms dispatch</span>
-                    </div>
-                    <div className="flex gap-4">
-                      <a href="https://github.com/Romeo-Bess/Romeo-Runner" target="_blank" rel="noreferrer" className="border border-outline-variant text-on-surface px-3 py-1.5 rounded-lg font-mono text-[10px] flex items-center gap-1 hover:border-primary hover:text-primary transition-colors">
-                        Repository
-                      </a>
-                      <a href="https://romeo-runner.vercel.app/" target="_blank" rel="noreferrer" className="bg-primary text-on-primary px-3 py-1.5 rounded-lg font-mono text-[10px] flex items-center gap-1 hover:opacity-95 transition-all ml-auto">
-                        <span className="material-symbols-outlined text-[12px]">open_in_new</span>
-                        Live Demo
-                      </a>
+                      <div className="flex items-center justify-between">
+                        <a href={p.githubUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs font-mono text-on-surface-variant hover:text-primary transition-colors border border-outline-variant/20 px-3 py-1.5 rounded-lg hover:border-primary/30">
+                          <Github className="w-3.5 h-3.5" />Repository
+                        </a>
+                        <Link to={`/projects/${p.slug}`} className="text-xs font-mono text-on-surface-variant/50 hover:text-primary transition-colors">
+                          Case Study →
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </article>
+                </motion.div>
               );
-            }
+            })()}
 
-            if (project.id === "music-app") {
+            {filtered.find((p) => p.id === "music-app") && (() => {
+              const p = projects.find((x) => x.id === "music-app")!;
               return (
-                <article key={project.id} className={`${project.cols} glass-card rounded-2xl flex flex-col overflow-hidden group border border-outline-variant/20 hover:border-primary/20`}>
-                  {/* Interactive music player sandbox */}
-                  <div className="h-48 bg-[#0a0f16] border-b border-outline-variant/30 flex items-center justify-center p-4">
-                    <div className="w-full max-w-sm bg-surface-container-highest/60 border border-outline-variant/20 rounded-xl p-4 flex flex-col gap-3">
-                      <div className="flex justify-between items-center">
-                        <span className="font-mono text-[9px] uppercase tracking-wider text-outline">Player Sandbox</span>
-                        <span className="text-[9px] font-mono bg-secondary/15 text-secondary px-2 py-0.5 rounded flex items-center gap-1">
-                          <Volume2 className="w-3 h-3" />
-                          Web Audio
-                        </span>
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+                  className="lg:col-span-6"
+                >
+                  <div className="glass-card rounded-2xl overflow-hidden border border-outline-variant/20 hover:border-amber-500/25 transition-all group">
+                    <div className="p-6 pb-4" style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.05) 0%, transparent 60%)" }}>
+                      <CRTScreen glowColor={p.glowColor} label="PLAYER-v3">
+                        {renderScreen(p.id)}
+                      </CRTScreen>
+                    </div>
+                    <div className="px-7 pb-7 pt-2">
+                      <span className="font-mono text-[9px] uppercase tracking-widest text-amber-400/70 block mb-1">{p.category}</span>
+                      <h2 className="font-display text-xl font-bold text-on-surface mb-2">{p.title}</h2>
+                      <p className="font-body text-sm text-on-surface-variant leading-relaxed mb-4">{p.description}</p>
+                      <div className="flex flex-wrap gap-1.5 mb-5">
+                        {p.technologies.map((t) => <TechBadge key={t} label={t} />)}
                       </div>
-                      
-                      {/* Track display */}
-                      <div className="flex items-center gap-3 bg-black/40 p-2.5 rounded-lg border border-white/5">
-                        <button 
-                          onClick={togglePlayback}
-                          className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-on-primary hover:scale-105 active:scale-95 transition-all"
-                        >
-                          {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current translate-x-0.5" />}
-                        </button>
-                        <div className="flex-1 min-w-0 text-left">
-                          <div className="font-display font-semibold text-xs text-on-surface truncate">Coding Beats</div>
-                          <div className="font-mono text-[9px] text-outline truncate">Romeo Bessenaar</div>
-                        </div>
-                        {/* Waveform */}
-                        <div className="flex items-end gap-0.5 h-6">
-                          {musicBars.map((hVal, mIdx) => (
-                            <div 
-                              key={mIdx} 
-                              className="w-0.5 bg-primary/75 rounded-full transition-all duration-200"
-                              style={{ height: `${hVal}%` }}
-                            />
-                          ))}
-                        </div>
+                      <div className="flex items-center justify-between">
+                        <a href={p.githubUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs font-mono text-on-surface-variant hover:text-primary transition-colors border border-outline-variant/20 px-3 py-1.5 rounded-lg hover:border-primary/30">
+                          <Github className="w-3.5 h-3.5" />Repository
+                        </a>
+                        <Link to={`/projects/${p.slug}`} className="text-xs font-mono text-on-surface-variant/50 hover:text-primary transition-colors">
+                          Case Study →
+                        </Link>
                       </div>
-
-                      {/* Slider */}
-                      <div className="flex items-center gap-2 text-[9px] font-mono text-outline">
-                        <span>0:{Math.floor(progress * 0.1).toString().padStart(2, "0")}</span>
-                        <div className="flex-1 h-1 bg-surface-container rounded-full overflow-hidden relative">
-                          <div 
-                            className="h-full bg-primary transition-all duration-300"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                        <span>1:00</span>
-                      </div>
-
                     </div>
                   </div>
-
-                  <div className="p-6 flex flex-col flex-grow text-left">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-secondary/15 flex items-center justify-center text-secondary">
-                          <span className="material-symbols-outlined text-lg">audiotrack</span>
-                        </div>
-                        <h3 className="font-display font-semibold text-lg text-on-surface">{project.title}</h3>
-                      </div>
-                      <a href="https://github.com/Romeo-Bess/Music-App" target="_blank" rel="noreferrer" className="text-outline hover:text-secondary transition-colors">
-                        <span className="material-symbols-outlined text-[18px]">open_in_new</span>
-                      </a>
-                    </div>
-                    <p className="font-body text-xs sm:text-sm text-on-surface-variant mb-6 flex-grow leading-relaxed">
-                      {project.description}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 mb-6">
-                      {project.technologies.map((t, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded bg-surface-container-high text-[10px] font-mono text-on-surface-variant border border-outline-variant/10 font-medium">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex justify-between items-center border-t border-outline-variant/10 pt-4 mt-auto font-mono text-[10px] text-outline">
-                      <span>Visualization</span>
-                      <span className="text-secondary font-bold">Canvas Audio Node</span>
-                    </div>
-                  </div>
-                </article>
+                </motion.div>
               );
-            }
-
-            return null;
-          })
+            })()}
+          </div>
         )}
-      </section>
+      </div>
+
+      {/* ── BOTTOM CTA ─────────────────────────────────── */}
+      <div className="border-t border-outline-variant/15 py-20 text-center px-margin-mobile">
+        <p className="font-mono text-xs text-on-surface-variant/40 uppercase tracking-widest mb-3">All projects are open source</p>
+        <a
+          href="https://github.com/Romeo-Bess"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 text-sm font-mono font-semibold text-primary hover:text-primary/80 transition-colors"
+        >
+          <Github className="w-4 h-4" />
+          View all repositories on GitHub →
+        </a>
+      </div>
+
+      {/* Vinyl spin animation */}
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 };
+
 export default Projects;
