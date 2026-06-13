@@ -63,14 +63,20 @@ export const Projects: React.FC = () => {
     if (!audioCtxRef.current) {
       const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
       audioCtxRef.current = new AC();
-      gainRef.current = audioCtxRef.current.createGain();
-      gainRef.current.gain.value = 0.25;
-      gainRef.current.connect(audioCtxRef.current.destination);
     }
-    if (audioCtxRef.current.state === "suspended") audioCtxRef.current.resume();
-    setIsPlaying(true);
     const ctx = audioCtxRef.current;
-    const dest = gainRef.current!;
+    if (!ctx) return;
+    
+    if (!gainRef.current) {
+      gainRef.current = ctx.createGain();
+      gainRef.current.gain.value = 0.25;
+      gainRef.current.connect(ctx.destination);
+    }
+    
+    if (ctx.state === "suspended") ctx.resume();
+    setIsPlaying(true);
+    
+    const dest = gainRef.current;
     let step = 0;
     seqRef.current = setInterval(() => {
       const t = ctx.currentTime;
@@ -166,7 +172,7 @@ export const Projects: React.FC = () => {
   }, []);
 
   /* ── Row fade-in animation helper ── */
-  const rowVariants = {
+  const rowVariants: any = {
     hidden: { opacity: 0, y: 40 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
   };
@@ -184,7 +190,7 @@ export const Projects: React.FC = () => {
             Selected<br /><span className="text-gradient">Work</span>
           </h1>
           <p className="font-body text-base text-on-surface-variant max-w-lg leading-relaxed">
-            Four real builds — you can interact with every single one right here, right now. No screenshots.
+            Five real builds — you can interact with every single one right here, right now. No screenshots.
           </p>
         </motion.div>
       </div>
@@ -594,6 +600,120 @@ export const Projects: React.FC = () => {
               <Link to="/projects/music-app" className="inline-flex items-center gap-1 text-xs font-mono transition-all" style={{ color: "rgba(245,158,11,0.7)" }}>
                 Case Study <ChevronRight className="w-3.5 h-3.5" />
               </Link>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* ════════════════════════════════════════════════════
+          PROJECT 05 — ARTISAN MARKETPLACE
+          Layout: Info LEFT · Demo RIGHT
+      ════════════════════════════════════════════════════ */}
+      <Divider />
+      <motion.section
+        initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
+        variants={rowVariants}
+        className="w-full relative overflow-hidden"
+        style={{ background: "linear-gradient(135deg, rgba(148,73,45,0.05) 0%, transparent 55%)" }}
+      >
+        <div className="absolute top-1/2 -translate-y-1/2 left-6 font-display font-black text-[180px] leading-none select-none pointer-events-none" style={{ color: "rgba(148,73,45,0.04)" }}>
+          05
+        </div>
+
+        <div className="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 lg:grid-cols-2 gap-0 items-stretch min-h-[560px]">
+          {/* Info LEFT */}
+          <div className="flex flex-col justify-center py-20 pr-0 lg:pr-16 relative z-10">
+            <span className="font-mono text-[10px] uppercase tracking-[0.25em] mb-4 flex items-center gap-2" style={{ color: "rgba(148,73,45,0.7)" }}>
+              <span className="w-8 h-px" style={{ background: "rgba(148,73,45,0.4)" }} />Web Platform · Full Stack
+            </span>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-on-surface leading-[1.1] mb-5">
+              Artisane<br />Gallery
+            </h2>
+            <p className="font-body text-sm sm:text-base text-on-surface-variant leading-relaxed mb-8 max-w-md">
+              A premium curated art marketplace built end-to-end. Features live auction bidding, artist portfolio management, commission request flows, a collector dashboard, and Supabase authentication. EB Garamond editorial aesthetics meets functional commerce.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-8">
+              {["TypeScript", "TailwindCSS", "Supabase Auth", "Vite", "Vanilla JS"].map((t) => (
+                <Tag key={t} label={t} color="#94492d" />
+              ))}
+            </div>
+            <div className="flex items-center gap-4">
+              <a href="https://github.com/Romeo-Bess/Artisan-market-place" target="_blank" rel="noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border text-xs font-mono transition-all"
+                style={{ borderColor: "rgba(148,73,45,0.25)", color: "rgba(148,73,45,0.8)" }}>
+                <GitBranch className="w-3.5 h-3.5" />Repository
+              </a>
+            </div>
+          </div>
+
+          {/* Demo RIGHT — Gallery showcase */}
+          <div className="flex items-center justify-center py-12 lg:py-16 relative">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-96 h-96 rounded-full blur-[100px]" style={{ background: "rgba(148,73,45,0.1)" }} />
+            </div>
+            {/* Browser chrome mockup */}
+            <div className="relative w-full max-w-lg rounded-xl overflow-hidden z-10"
+              style={{ background: "#0d0b09", border: "1px solid rgba(148,73,45,0.15)", boxShadow: "0 0 60px rgba(148,73,45,0.15), 0 32px 64px rgba(0,0,0,0.55)" }}>
+              {/* Browser bar */}
+              <div className="flex items-center gap-3 px-4 py-3 border-b" style={{ borderColor: "rgba(148,73,45,0.1)", background: "#100e0b" }}>
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-500/60" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                  <div className="w-3 h-3 rounded-full" style={{ background: "rgba(148,73,45,0.7)" }} />
+                </div>
+                <div className="flex-1 bg-white/5 rounded-md px-3 py-1 font-mono text-[10px] text-white/30 flex items-center gap-2">
+                  <span style={{ color: "rgba(148,73,45,0.5)" }}>🎨</span> artisane.gallery
+                </div>
+                <span className="font-mono text-[9px]" style={{ color: "rgba(148,73,45,0.4)" }}>ARTISANE</span>
+              </div>
+
+              {/* App content: mini gallery grid */}
+              <div className="p-4 flex flex-col gap-3">
+                {/* Nav bar */}
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-mono text-sm font-bold" style={{ color: "#94492d" }}>Artisane</span>
+                  <div className="flex items-center gap-3 text-[10px] font-mono text-white/30">
+                    <span>Browse</span><span>Artists</span><span>Auctions</span>
+                  </div>
+                </div>
+
+                {/* Hero strip */}
+                <div className="relative h-28 rounded-lg overflow-hidden">
+                  <img
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAirhr5nm4BX404SeyoS3nfUnIf8uWbcTWLOtl-6n_pSL-9O_b_47Ybq6xX9KEiuS8ScvERkHxFUID3WnUkX89zW198nCe0jkLUQJ6YJOMI-576s3Ta4AM3m0CWAHTUA-73eMTdvgRBSgIdg9qoWYk9XJcUwetK9peXk35N1rSo0NHm5Pd4UdEI3elxn0IM4XsBYgVSN4na7GNE0yyGGsSZwujKkZEjuIKc4Rx_WI57-EcfryrWYAh5fYb4cSrb0bDQfLaiIatLMI5J"
+                    alt="Gallery hero"
+                    className="w-full h-full object-cover opacity-60"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute bottom-3 left-3">
+                    <p className="font-mono text-[9px] uppercase tracking-widest mb-0.5" style={{ color: "rgba(148,73,45,0.8)" }}>Featured</p>
+                    <h3 className="text-white text-sm font-bold">Curating silence<br />and intention.</h3>
+                  </div>
+                </div>
+
+                {/* Artwork grid */}
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    "https://lh3.googleusercontent.com/aida-public/AB6AXuAmbFlQ2bFWWZo19GPR39vSN4lnQtJx35_rxQ2EFvGhti6-CXkiNA1IKxloTsXpm8_-onjhPJlDhNMOk2OVC_W8sWFmMdw_Aw9Smu6E0btb61t40GGXuWi6YVsmBfnFgup610B48Isg8QVhTtEN0-K3H_kCPhx71b40V8mCmCu-NvMfo9KisZ49c8lzRUP3aclgsuRJMZkBxefSW2qzLau3OtRsbD_0HeBPfF9_GhBHAhrdKf5Q7esrqPMWxhJKMjkrp3EwPXoidjwZ",
+                    "https://lh3.googleusercontent.com/aida-public/AB6AXuCzquGUHX9FB9f-6wqzThDnPK3t5ZSfMaI7BeUir46BHqOehrvTfOFhZRs1k-35sZ4XQANIuhh-UZz21SC7Otw5rO_YZSK68_qelCRyt3NgHh7jow_XrwBTihm8BXKKNFKhNgDeA0MrdNWUzlwV4dfMst-IhNsydrP5bDAipecIiWbYD0VtW3zVQdGu9YsZt8W67xmBy-kNvRKvY140iroiC42w3Cp6zb3vHrQyAPg9NtAJP26163nE4GR3sRdoUwv2knliRIg2Gt9m",
+                    "https://lh3.googleusercontent.com/aida-public/AB6AXuDcHxbXi-x373Koe5GckvsxZDzmJCvL1CI9kEgFvp4L-rFFAKDaVGRWxATmKuHv_Qbz0uessRIrPViH-LoekcjaTJMZTvshejggjyc7yQpH1Ly9Pi5VJQvOh_RNQw3J3tcgJyy1_B221HxlZB1xFyL4-KH5pRyYg5n_3cbj80DHcRR447QZybPz1bB1mKIU6XOF-2qJlCoxuP4SkOcfLZT2Kx1Hc3UwGTKxQxYFH6RkMVH39g442vyBXftu0VfCOYQtrB8EaZDFzl4Z",
+                  ].map((src, i) => (
+                    <div key={i} className="relative aspect-[3/4] rounded-md overflow-hidden group cursor-pointer">
+                      <img src={src} alt={`Artwork ${i + 1}`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Status bar */}
+                <div className="flex items-center justify-between text-[9px] font-mono pt-1 border-t" style={{ borderColor: "rgba(148,73,45,0.1)", color: "rgba(148,73,45,0.5)" }}>
+                  <span>3 artworks · Curator's Choice</span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-emerald-400" />
+                    Live Auction Active
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

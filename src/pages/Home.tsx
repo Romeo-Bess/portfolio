@@ -30,9 +30,7 @@ export const Home: React.FC = () => {
   // GitHub Overview States
   const [gitProfile, setGitProfile] = useState<any | null>(null);
   const [gitRepos, setGitRepos] = useState<any[]>([]);
-
-  // Mini Chart state for floating Panel 2
-  const [chartBars, setChartBars] = useState<number[]>([]);
+  const [gitError, setGitError] = useState(false);
 
   // Video reference for autoplay logic
   const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -45,24 +43,6 @@ export const Home: React.FC = () => {
         console.warn("Video autoplay failed or was blocked:", err);
       });
     }
-  }, []);
-
-  useEffect(() => {
-    // Generate initial bars for the mini throughput chart
-    const initialBars = Array.from({ length: 15 }, () => 20 + Math.random() * 70);
-    setChartBars(initialBars);
-
-    // Update one random bar every 300ms to simulate data activity
-    const interval = setInterval(() => {
-      setChartBars((prev) => {
-        const next = [...prev];
-        const idx = Math.floor(Math.random() * next.length);
-        next[idx] = 20 + Math.random() * 75;
-        return next;
-      });
-    }, 300);
-
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -94,7 +74,7 @@ export const Home: React.FC = () => {
   useEffect(() => {
     const fetchGithubOverview = async () => {
       try {
-        const username = import.meta.env.VITE_GITHUB_USERNAME || "romeobessenaar";
+        const username = import.meta.env.VITE_GITHUB_USERNAME || "Romeo-Bess";
         const cachedTime = localStorage.getItem("github_cache_time");
         const cachedProfile = localStorage.getItem("github_profile_cache");
         const cachedRepos = localStorage.getItem("github_repos_cache");
@@ -117,12 +97,20 @@ export const Home: React.FC = () => {
         if (pRes.ok && rRes.ok) {
           const profileData = await pRes.json();
           const reposData = await rRes.json();
-          const sorted = [...reposData].sort((a, b) => b.stargazers_count - a.stargazers_count);
-          setGitProfile(profileData);
-          setGitRepos(sorted.slice(0, 3));
+          // Verify not a rate-limit error response
+          if (profileData.login) {
+            const sorted = [...reposData].sort((a: any, b: any) => b.stargazers_count - a.stargazers_count);
+            setGitProfile(profileData);
+            setGitRepos(sorted.slice(0, 3));
+          } else {
+            setGitError(true);
+          }
+        } else {
+          setGitError(true);
         }
       } catch (err) {
         console.warn("Failed to fetch Github overview on Home page", err);
+        setGitError(true);
       }
     };
     fetchGithubOverview();
@@ -232,6 +220,103 @@ export const Home: React.FC = () => {
               </span>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* What I Build — Core Specializations */}
+      <section className="max-w-[1280px] w-full py-24 px-margin-mobile md:px-margin-desktop">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-mono text-primary mb-4">
+              <span className="material-symbols-outlined text-[12px]">verified</span>
+              <span>CORE SPECIALIZATIONS</span>
+            </div>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-on-surface">What I Build</h2>
+            <p className="font-body text-sm text-on-surface-variant mt-2 max-w-lg">
+              Three converging disciplines — from low-level packet routing to production web deployments.
+            </p>
+          </div>
+          <Link
+            to="/skills"
+            className="inline-flex items-center gap-1.5 text-primary hover:text-primary-container font-mono text-sm group shrink-0"
+          >
+            <span>Full Skills Map</span>
+            <span className="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Card 1 — Networking & Infrastructure */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0 }}
+            className="glass-card rounded-2xl p-8 border border-outline-variant/20 hover:border-primary/25 transition-all group flex flex-col gap-6"
+          >
+            <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[22px] text-cyan-400">router</span>
+            </div>
+            <div>
+              <h3 className="font-display text-xl font-bold text-on-surface mb-2">Network Infrastructure</h3>
+              <p className="font-body text-sm text-on-surface-variant leading-relaxed">
+                Designed and managed enterprise-grade networks at Groote Schuur Hospital supporting 200+ endpoints. Proficient in VLAN segmentation, DHCP, routing protocols, and network security hardening.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 mt-auto">
+              {["CCNA Aligned", "VLAN / DHCP", "Routing & Switching", "Cisco IOS"].map((tag) => (
+                <span key={tag} className="px-2.5 py-1 rounded-lg bg-cyan-500/8 border border-cyan-500/15 text-[10px] font-mono text-cyan-400">{tag}</span>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Card 2 — Automation & DevOps */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="glass-card rounded-2xl p-8 border border-outline-variant/20 hover:border-emerald-500/25 transition-all group flex flex-col gap-6"
+          >
+            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[22px] text-emerald-400">terminal</span>
+            </div>
+            <div>
+              <h3 className="font-display text-xl font-bold text-on-surface mb-2">Automation & Systems</h3>
+              <p className="font-body text-sm text-on-surface-variant leading-relaxed">
+                Built lab automation pipelines (Romeo Runner), HL7 data channel integrations, and containerised deployment stacks. From bash scripts to Docker/K8s orchestration, I automate repetitive infrastructure.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 mt-auto">
+              {["Docker / K8s", "Bash & Python", "PostgreSQL", "CI/CD"].map((tag) => (
+                <span key={tag} className="px-2.5 py-1 rounded-lg bg-emerald-500/8 border border-emerald-500/15 text-[10px] font-mono text-emerald-400">{tag}</span>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Card 3 — Web & CRM */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="glass-card rounded-2xl p-8 border border-outline-variant/20 hover:border-rose-500/25 transition-all group flex flex-col gap-6"
+          >
+            <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[22px] text-rose-400">code</span>
+            </div>
+            <div>
+              <h3 className="font-display text-xl font-bold text-on-surface mb-2">Web & CRM Development</h3>
+              <p className="font-body text-sm text-on-surface-variant leading-relaxed">
+                Builds production React/TypeScript applications and Salesforce LWC components. Delivered full-stack platforms with Supabase backends, real-time APIs, and polished user interfaces.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-1.5 mt-auto">
+              {["React & TypeScript", "Salesforce LWC", "Supabase", "Tailwind CSS"].map((tag) => (
+                <span key={tag} className="px-2.5 py-1 rounded-lg bg-rose-500/8 border border-rose-500/15 text-[10px] font-mono text-rose-400">{tag}</span>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -366,7 +451,37 @@ export const Home: React.FC = () => {
 
             {/* Right side: Top Repos list */}
             <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 ${gitProfile ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
-              {gitRepos.length === 0 ? (
+              {gitError ? (
+                /* Graceful fallback when GitHub API is rate-limited */
+                [
+                  { name: "Artisan-market-place", desc: "Premium curated art marketplace with live auctions, artist profiles, and collector dashboards.", lang: "TypeScript" },
+                  { name: "ultimate-mini-web-scraper", desc: "Client-side web scraper using DOMParser API and a CORS proxy. No backend required.", lang: "TypeScript" },
+                  { name: "Romeo-Runner", desc: "Lab automation task runner for orchestrating pathology hardware controllers and diagnostic workflows.", lang: "Go" },
+                ].map((repo, i) => (
+                  <a
+                    key={i}
+                    href={`https://github.com/Romeo-Bess/${repo.name}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="glass-panel border border-outline-variant/25 rounded-xl p-5 hover:border-primary/30 hover:bg-surface-container-low/35 transition-all flex flex-col justify-between text-left"
+                  >
+                    <div>
+                      <div className="flex items-center gap-1.5 mb-3">
+                        <span className="material-symbols-outlined text-[16px] text-on-surface">code</span>
+                        <h4 className="font-display font-semibold text-xs text-on-surface truncate max-w-[160px]">{repo.name}</h4>
+                      </div>
+                      <p className="font-body text-[11px] text-on-surface-variant leading-relaxed line-clamp-3 mb-4">{repo.desc}</p>
+                    </div>
+                    <div className="flex justify-between items-center text-[9px] font-mono text-outline pt-2 border-t border-outline-variant/10">
+                      <span className="text-primary font-bold">{repo.lang}</span>
+                      <span className="flex items-center gap-1 text-outline/60">
+                        <span className="material-symbols-outlined text-[11px]">open_in_new</span>
+                        GitHub
+                      </span>
+                    </div>
+                  </a>
+                ))
+              ) : gitRepos.length === 0 ? (
                 Array(3)
                   .fill(0)
                   .map((_, i) => (
@@ -374,8 +489,11 @@ export const Home: React.FC = () => {
                   ))
               ) : (
                 gitRepos.map((repo) => (
-                  <div
+                  <a
                     key={repo.id}
+                    href={repo.html_url}
+                    target="_blank"
+                    rel="noreferrer"
                     className="glass-panel border border-outline-variant/25 rounded-xl p-5 hover:border-primary/30 hover:bg-surface-container-low/35 transition-all flex flex-col justify-between text-left"
                   >
                     <div>
@@ -405,7 +523,7 @@ export const Home: React.FC = () => {
                         <span className="text-primary font-bold">{repo.language}</span>
                       )}
                     </div>
-                  </div>
+                  </a>
                 ))
               )}
             </div>
